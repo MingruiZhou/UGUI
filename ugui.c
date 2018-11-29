@@ -4948,12 +4948,12 @@ void UG_PutString( UG_S16 x, UG_S16 y, char* str )
    while ( *str != 0 )
    {
       chr = *str++;
-	  if (chr < gui->font.start_char || chr > gui->font.end_char) continue;
       if ( chr == '\n' )
       {
          xp = gui->x_dim;
          continue;
       }
+	  if (chr < gui->font.start_char || chr > gui->font.end_char) continue;
 	  cw = gui->font.widths ? gui->font.widths[chr - gui->font.start_char] : gui->font.char_width;
 
       if ( xp + cw > gui->x_dim - 1 )
