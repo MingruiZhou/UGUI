@@ -5805,39 +5805,78 @@ void UG_WaitForUpdate( void )
 void UG_DrawBMP( UG_S16 xp, UG_S16 yp, UG_BMP* bmp )
 {
    UG_S16 x,y,xs;
-   UG_U8 r,g,b;
-   UG_U16* p;
-   UG_U16 tmp;
    UG_COLOR c;
+   UG_U8 *bytes, *tmp;
+   int bytes_pp;
 
    if ( bmp->p == NULL ) return;
 
-   /* Only support 16 BPP so far */
-   if ( bmp->bpp == BMP_BPP_16 )
-   {
-      p = (UG_U16*)bmp->p;
-   }
-   else
-   {
+   bytes = (UG_U8*)bmp->p;
+   xs = xp;
+   switch(bmp->bpp) {
+   case BMP_BPP_32:
+      bytes_pp = 4;
+      break;
+   case BMP_BPP_16:
+      bytes_pp = 2;
+      break;
+   case BMP_BPP_8:
+      bytes_pp = 1;
+      break;
+   default:
       return;
    }
 
-   xs = xp;
    for(y=0;y<bmp->height;y++)
    {
       xp = xs;
       for(x=0;x<bmp->width;x++)
       {
-         tmp = *p++;
-         /* Convert RGB565 to RGB888 */
-         r = (tmp>>11)&0x1F;
-         r<<=3;
-         g = (tmp>>5)&0x3F;
-         g<<=2;
-         b = (tmp)&0x1F;
-         b<<=3;
-         c = ((UG_COLOR)r<<16) | ((UG_COLOR)g<<8) | (UG_COLOR)b;
-         UG_DrawPixel( xp++ , yp , c );
+         int i = 0;
+
+         c = 0;
+         tmp = &c;
+         for (i = 0; i < bytes_pp; i++)
+            tmp[i] = bytes[i];
+
+         switch(bmp->bpp) {
+         case BMP_BPP_32: //RGBA
+            do {
+               UG_DrawPixel(xp++ , yp , c >> 8);
+            } while (0);
+            break;
+         case BMP_BPP_16: //RGB565 or RGB555
+            do {
+               UG_U8 r,g,b;
+
+               if (bmp->colors == BMP_RGB565) {
+                  r = (c>>11)&0x1F;
+                  r<<=3;
+                  g = (c>>5)&0x3F;
+                  g<<=2;
+                  b = (c)&0x1F;
+                  b<<=3;
+               } else if (bmp->colors == BMP_RGB555) {
+                  r = (c>>10)&0x1F;
+                  r<<=3;
+                  g = (c>>5)&0x1F;
+                  g<<=3;
+                  b = (c)&0x1F;
+                  b<<=3;
+               }
+               c = ((UG_COLOR)r<<16) | ((UG_COLOR)g<<8) | (UG_COLOR)b;
+               UG_DrawPixel(xp++ , yp , c);
+            } while (0);
+            break;
+         case BMP_BPP_8: //grayscale
+            for (i = 1; i < 4; i++)
+               tmp[i] = tmp[0];
+            UG_DrawPixel(xp++ , yp , c);
+            break;
+         default:
+            break;
+         }
+         bytes += bytes_pp;
       }
       yp++;
    }
