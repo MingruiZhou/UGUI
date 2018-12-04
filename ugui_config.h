@@ -40,7 +40,7 @@ typedef uint16_t     UG_U16;
 typedef int16_t      UG_S16;
 typedef uint32_t     UG_U32;
 typedef int32_t      UG_S32;
-
+typedef uint32_t     UG_Unicode;
 
 /* Example for dsPIC33
 typedef unsigned char         UG_U8;
