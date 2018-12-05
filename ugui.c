@@ -7292,7 +7292,7 @@ UG_RESULT UG_CheckboxHide( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetCheched( UG_WINDOW* wnd, UG_U8 id, UG_U8 ch )
+UG_RESULT UG_CheckboxSetChecked( UG_WINDOW* wnd, UG_U8 id, UG_U8 ch )
 {
    UG_OBJECT* obj=NULL;
    UG_CHECKBOX* btn=NULL;
@@ -7664,6 +7664,7 @@ void _UG_CheckboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
    UG_TEXT txt;
    UG_U8 d;
    UG_U8 d2;
+   UG_COLOR c;
 
    /* Get object-specific data */
    chb = (UG_CHECKBOX*)(obj->data);
@@ -7750,7 +7751,7 @@ void _UG_CheckboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
 //             txt.a.ys = obj->a_abs.ys+d;
 //             txt.a.xe = obj->a_abs.xe-d;
 //             txt.a.ye = obj->a_abs.ye-d;
-            txt.a.xs = obj->a_abs.xs + d2 + 3*d;
+            txt.a.xs = obj->a_abs.xs + d2 + 3*d + 5;
             txt.a.ys = obj->a_abs.ys + d;
             txt.a.xe = obj->a_abs.xe;
             txt.a.ye = obj->a_abs.ye;
@@ -7765,28 +7766,19 @@ void _UG_CheckboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
             _UG_SendObjectPostrenderEvent(wnd, obj);
 #endif
          }
-         
-         /* Draw Checkbox X */
          if (chb->checked)
-         {    
-            UG_DrawLine(obj->a_abs.xs+d+1,  obj->a_abs.ys+d,   obj->a_abs.xs+d2+d-1, obj->a_abs.ys+d2+d-2, chb->fc);
-            UG_DrawLine(obj->a_abs.xs+d,    obj->a_abs.ys+d,   obj->a_abs.xs+d2+d-1, obj->a_abs.ys+d2+d-1, chb->fc);
-            UG_DrawLine(obj->a_abs.xs+d,    obj->a_abs.ys+d+1, obj->a_abs.xs+d2+d-2, obj->a_abs.ys+d2+d-1, chb->fc);
- 
-            UG_DrawLine(obj->a_abs.xs+d2+d-1,  obj->a_abs.ys+d+1, obj->a_abs.xs+d+1, obj->a_abs.ys+d2+d-1, chb->fc);
-            UG_DrawLine(obj->a_abs.xs+d2+d-1,  obj->a_abs.ys+d,   obj->a_abs.xs+d,   obj->a_abs.ys+d2+d-1, chb->fc);
-            UG_DrawLine(obj->a_abs.xs+d2+d-2,  obj->a_abs.ys+d,   obj->a_abs.xs+d,   obj->a_abs.ys+d2+d-2, chb->fc);
-         }
+            c = chb->fc;
          else
-         {
-            UG_DrawLine(obj->a_abs.xs+d+1,  obj->a_abs.ys+d,   obj->a_abs.xs+d2+d-1, obj->a_abs.ys+d2+d-2, chb->bc);
-            UG_DrawLine(obj->a_abs.xs+d,    obj->a_abs.ys+d,   obj->a_abs.xs+d2+d-1, obj->a_abs.ys+d2+d-1, chb->bc);
-            UG_DrawLine(obj->a_abs.xs+d,    obj->a_abs.ys+d+1, obj->a_abs.xs+d2+d-2, obj->a_abs.ys+d2+d-1, chb->bc);
- 
-            UG_DrawLine(obj->a_abs.xs+d2+d-1,  obj->a_abs.ys+d+1, obj->a_abs.xs+d+1, obj->a_abs.ys+d2+d-1, chb->bc);
-            UG_DrawLine(obj->a_abs.xs+d2+d-1,  obj->a_abs.ys+d,   obj->a_abs.xs+d,   obj->a_abs.ys+d2+d-1, chb->bc);
-            UG_DrawLine(obj->a_abs.xs+d2+d-2,  obj->a_abs.ys+d,   obj->a_abs.xs+d,   obj->a_abs.ys+d2+d-2, chb->bc);
-         }    
+            c = chb->bc;
+
+         /* Draw Checkbox X */
+         UG_DrawLine(obj->a_abs.xs+d+1,    obj->a_abs.ys+(d2+d-1)/2+1, obj->a_abs.xs+(d2+d-2)/2, obj->a_abs.ys+d2+d-4, c);
+         UG_DrawLine(obj->a_abs.xs+d+1,    obj->a_abs.ys+(d2+d-1)/2+2, obj->a_abs.xs+(d2+d-2)/2, obj->a_abs.ys+d2+d-3, c);
+         UG_DrawLine(obj->a_abs.xs+d+1,    obj->a_abs.ys+(d2+d-1)/2+3, obj->a_abs.xs+(d2+d-2)/2, obj->a_abs.ys+d2+d-2, c);
+         UG_DrawLine(obj->a_abs.xs+(d2+d-2)/2,  obj->a_abs.ys+d2+d-4, obj->a_abs.xs+d2+d - 2, obj->a_abs.ys+d+2, c);
+         UG_DrawLine(obj->a_abs.xs+(d2+d-2)/2,  obj->a_abs.ys+d2+d-3, obj->a_abs.xs+d2+d - 2, obj->a_abs.ys+d+3, c);
+         UG_DrawLine(obj->a_abs.xs+(d2+d-2)/2,  obj->a_abs.ys+d2+d-2, obj->a_abs.xs+d2+d - 2, obj->a_abs.ys+d+4, c);
+
          /* Draw Checkbox frame */
          if ( !(chb->style & CHB_STYLE_NO_BORDERS) )
          {
