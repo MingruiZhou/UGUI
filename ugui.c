@@ -5387,7 +5387,8 @@ void _UG_PutChar( UG_Unicode chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, 
 
 void _UG_PutText(UG_TEXT* txt)
 {
-   UG_U16 sl,rc,wl, i, j;
+   UG_U16 sl,rc,wl;
+   UG_S16 i;
    UG_S16 xp,yp;
    UG_S16 xs=txt->a.xs;
    UG_S16 ys=txt->a.ys;
@@ -5444,9 +5445,13 @@ void _UG_PutText(UG_TEXT* txt)
                   break;
             }
             if (i >= txt->font->codes_count)
-	       continue;
+               i = -1;
          }
-         wl += (txt->font->widths ? txt->font->widths[i] : char_width) + char_h_space;
+
+         if (i >= 0)
+            wl += (txt->font->widths ? txt->font->widths[i] : char_width) + char_h_space;
+         else
+            wl += char_width + char_h_space;
          c++;
       }
       wl -= char_h_space;
@@ -5465,17 +5470,20 @@ void _UG_PutText(UG_TEXT* txt)
          if ( chr == 0 ) return;
          _UG_PutChar(chr,xp,yp,txt->fc,txt->bc,txt->font);
          if (!txt->font->codes_count) {
-            j = chr - txt->font->start_char;
+            i = chr - txt->font->start_char;
          } else {
-            for (j = 0; j < txt->font->codes_count; j++) {
-               if (txt->font->codes[j] == chr)
+            for (i = 0; i < txt->font->codes_count; i++) {
+               if (txt->font->codes[i] == chr)
                   break;
             }
-            if (j >= txt->font->codes_count)
-	       continue;
+            if (i >= txt->font->codes_count)
+	       i = -1;
          }
 
-         xp += (txt->font->widths ? txt->font->widths[j] : char_width) + char_h_space;
+	 if (i >= 0)
+            xp += (txt->font->widths ? txt->font->widths[i] : char_width) + char_h_space;
+         else
+            xp += char_width + char_h_space;
       }
       str++;
       yp += char_height + char_v_space;
@@ -7760,6 +7768,7 @@ void _UG_CheckboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
             txt.h_space = 2;
             txt.v_space = 2;
             txt.str = chb->str;
+            printf("call %s\n", __func__);
             _UG_PutText( &txt );
             obj->state &= ~OBJ_STATE_REDRAW;
 #ifdef USE_POSTRENDER_EVENT
