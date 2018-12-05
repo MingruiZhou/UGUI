@@ -15,7 +15,7 @@ consists of three files: **ugui.c**, **ugui.h** and **ugui_config.h**.
 * µGUI supports platform-specific hardware acceleration
 * 16 different fonts available
 * cyrillic fonts supported
-* TrueType font converter available ([https://github.com/AriZuu](https://github.com/AriZuu))
+* TrueType font converter available ([https://github.com/goat91/ttf2ugui](https://github.com/goat91/ttf2ugui))
 * integrated and free scalable system console
 * basic geometric functions (e.g. line, circle, frame etc.)
 * can be easily ported to almost any microcontroller system
