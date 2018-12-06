@@ -53,10 +53,11 @@
  UG_RESULT _UG_WindowDrawTitle( UG_WINDOW* wnd );
  void _UG_WindowUpdate( UG_WINDOW* wnd );
  UG_RESULT _UG_WindowClear( UG_WINDOW* wnd );
- void _UG_TextboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj);
+ void _UG_TextlabelUpdate(UG_WINDOW* wnd, UG_OBJECT* obj);
  void _UG_ButtonUpdate(UG_WINDOW* wnd, UG_OBJECT* obj);
  void _UG_CheckboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj);
  void _UG_ImageUpdate(UG_WINDOW* wnd, UG_OBJECT* obj);
+ void _UG_TexteditUpdate(UG_WINDOW* wnd, UG_OBJECT* obj);
  void _UG_PutChar(UG_Unicode chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, const UG_FONT* font);
 
  /* Pointer to the gui */
@@ -7768,7 +7769,6 @@ void _UG_CheckboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
             txt.h_space = 2;
             txt.v_space = 2;
             txt.str = chb->str;
-            printf("call %s\n", __func__);
             _UG_PutText( &txt );
             obj->state &= ~OBJ_STATE_REDRAW;
 #ifdef USE_POSTRENDER_EVENT
@@ -7814,7 +7814,7 @@ void _UG_CheckboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
 /* -------------------------------------------------------------------------------- */
 /* -- TEXTBOX FUNCTIONS                                                          -- */
 /* -------------------------------------------------------------------------------- */
-UG_RESULT UG_TextboxCreate( UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye )
+UG_RESULT UG_TextlabelCreate( UG_WINDOW* wnd, UG_TEXTLABEL* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye )
 {
    UG_OBJECT* obj;
 
@@ -7833,7 +7833,7 @@ UG_RESULT UG_TextboxCreate( UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs
    txb->v_space = 0;
 
    /* Initialize standard object parameters */
-   obj->update = _UG_TextboxUpdate;
+   obj->update = _UG_TextlabelUpdate;
    obj->touch_state = OBJ_TOUCH_STATE_INIT;
    obj->type = OBJ_TYPE_TEXTBOX;
    obj->event = OBJ_EVENT_NONE;
@@ -7855,12 +7855,12 @@ UG_RESULT UG_TextboxCreate( UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxDelete( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_TextlabelDelete( UG_WINDOW* wnd, UG_U8 id )
 {
    return _UG_DeleteObject( wnd, OBJ_TYPE_TEXTBOX, id );
 }
 
-UG_RESULT UG_TextboxShow( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_TextlabelShow( UG_WINDOW* wnd, UG_U8 id )
 {
    UG_OBJECT* obj=NULL;
 
@@ -7873,7 +7873,7 @@ UG_RESULT UG_TextboxShow( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxHide( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_TextlabelHide( UG_WINDOW* wnd, UG_U8 id )
 {
    UG_OBJECT* obj=NULL;
 
@@ -7886,224 +7886,224 @@ UG_RESULT UG_TextboxHide( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR fc )
+UG_RESULT UG_TextlabelSetForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR fc )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
+   txb = (UG_TEXTLABEL*)(obj->data);
    txb->fc = fc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR bc )
+UG_RESULT UG_TextlabelSetBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR bc )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
+   txb = (UG_TEXTLABEL*)(obj->data);
    txb->bc = bc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetText( UG_WINDOW* wnd, UG_U8 id, UG_Unicode *str )
+UG_RESULT UG_TextlabelSetText( UG_WINDOW* wnd, UG_U8 id, UG_Unicode *str )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
+   txb = (UG_TEXTLABEL*)(obj->data);
    txb->str = str;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font )
+UG_RESULT UG_TextlabelSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
+   txb = (UG_TEXTLABEL*)(obj->data);
    txb->font = font;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetHSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 hs )
+UG_RESULT UG_TextlabelSetHSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 hs )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
+   txb = (UG_TEXTLABEL*)(obj->data);
    txb->h_space = hs;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetVSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 vs )
+UG_RESULT UG_TextlabelSetVSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 vs )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
+   txb = (UG_TEXTLABEL*)(obj->data);
    txb->v_space = vs;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetAlignment( UG_WINDOW* wnd, UG_U8 id, UG_U8 align )
+UG_RESULT UG_TextlabelSetAlignment( UG_WINDOW* wnd, UG_U8 id, UG_U8 align )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
+   txb = (UG_TEXTLABEL*)(obj->data);
    txb->align = align;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_COLOR UG_TextboxGetForeColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_TextlabelGetForeColor( UG_WINDOW* wnd, UG_U8 id )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
    UG_COLOR c = C_BLACK;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
+      txb = (UG_TEXTLABEL*)(obj->data);
       c = txb->fc;
    }
    return c;
 }
 
-UG_COLOR UG_TextboxGetBackColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_TextlabelGetBackColor( UG_WINDOW* wnd, UG_U8 id )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
    UG_COLOR c = C_BLACK;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
+      txb = (UG_TEXTLABEL*)(obj->data);
       c = txb->bc;
    }
    return c;
 }
 
-const UG_Unicode* UG_TextboxGetText( UG_WINDOW* wnd, UG_U8 id )
+const UG_Unicode* UG_TextlabelGetText( UG_WINDOW* wnd, UG_U8 id )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
    UG_Unicode* str = NULL;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
+      txb = (UG_TEXTLABEL*)(obj->data);
       str = txb->str;
    }
    return str;
 }
 
-UG_FONT* UG_TextboxGetFont( UG_WINDOW* wnd, UG_U8 id )
+UG_FONT* UG_TextlabelGetFont( UG_WINDOW* wnd, UG_U8 id )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
    UG_FONT* font = NULL;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
+      txb = (UG_TEXTLABEL*)(obj->data);
       font = (UG_FONT*)txb->font;
    }
    return font;
 }
 
-UG_S8 UG_TextboxGetHSpace( UG_WINDOW* wnd, UG_U8 id )
+UG_S8 UG_TextlabelGetHSpace( UG_WINDOW* wnd, UG_U8 id )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
    UG_S8 hs = 0;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
+      txb = (UG_TEXTLABEL*)(obj->data);
       hs = txb->h_space;
    }
    return hs;
 }
 
-UG_S8 UG_TextboxGetVSpace( UG_WINDOW* wnd, UG_U8 id )
+UG_S8 UG_TextlabelGetVSpace( UG_WINDOW* wnd, UG_U8 id )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
    UG_S8 vs = 0;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
+      txb = (UG_TEXTLABEL*)(obj->data);
       vs = txb->v_space;
    }
    return vs;
 }
 
-UG_U8 UG_TextboxGetAlignment( UG_WINDOW* wnd, UG_U8 id )
+UG_U8 UG_TextlabelGetAlignment( UG_WINDOW* wnd, UG_U8 id )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
+   UG_TEXTLABEL* txb=NULL;
    UG_U8 align = 0;
 
    obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
+      txb = (UG_TEXTLABEL*)(obj->data);
       align = txb->align;
    }
    return align;
 }
 
-void _UG_TextboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
+void _UG_TextlabelUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
 {
-   UG_TEXTBOX* txb;
+   UG_TEXTLABEL* txb;
    UG_AREA a;
    UG_TEXT txt;
 
    /* Get object-specific data */
-   txb = (UG_TEXTBOX*)(obj->data);
+   txb = (UG_TEXTLABEL*)(obj->data);
 
    /* -------------------------------------------------- */
    /* Object touch section                               */
@@ -8147,6 +8147,307 @@ void _UG_TextboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
             txt.h_space = txb->h_space;
             txt.v_space = txb->v_space;
             txt.str = txb->str;
+            _UG_PutText( &txt );
+            obj->state &= ~OBJ_STATE_REDRAW;
+#ifdef USE_POSTRENDER_EVENT
+            _UG_SendObjectPostrenderEvent(wnd, obj);
+#endif
+         }
+      }
+      else
+      {
+         UG_FillFrame(obj->a_abs.xs, obj->a_abs.ys, obj->a_abs.xe, obj->a_abs.ye, wnd->bc);
+      }
+      obj->state &= ~OBJ_STATE_UPDATE;
+   }
+}
+
+/* -------------------------------------------------------------------------------- */
+/* -- TEXTEDIT FUNCTIONS                                                          -- */
+/* -------------------------------------------------------------------------------- */
+UG_RESULT UG_TexteditCreate( UG_WINDOW* wnd, UG_TEXTEDIT* edit, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye )
+{
+   UG_OBJECT* obj;
+
+   obj = _UG_GetFreeObject( wnd );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   /* Initialize object-specific parameters */
+   edit->str[0] = '\0';
+   if (gui != NULL) edit->font = &gui->font;
+   else edit->font = NULL;
+   edit->style = 0; /* reserved */
+   edit->fc = wnd->fc;
+   edit->bc = C_WHITE;
+   edit->border = C_DARK_GRAY;
+   edit->align = ALIGN_CENTER_LEFT;
+   edit->h_space = 0;
+   edit->v_space = 0;
+   edit->echo = TEXTEDIT_ECHO_NORMAL;
+
+   edit->max_size = TEXT_MAX;
+
+   /* Initialize standard object parameters */
+   obj->update = _UG_TexteditUpdate;
+   obj->touch_state = OBJ_TOUCH_STATE_INIT;
+   obj->type = OBJ_TYPE_TEXTEDIT;
+   obj->event = OBJ_EVENT_NONE;
+   obj->a_rel.xs = xs;
+   obj->a_rel.ys = ys;
+   obj->a_rel.xe = xe;
+   obj->a_rel.ye = ye;
+   obj->a_abs.xs = -1;
+   obj->a_abs.ys = -1;
+   obj->a_abs.xe = -1;
+   obj->a_abs.ye = -1;
+   obj->id = id;
+   obj->state |= OBJ_STATE_VISIBLE | OBJ_STATE_REDRAW | OBJ_STATE_VALID | OBJ_STATE_TOUCH_ENABLE;
+   obj->data = (void*)edit;
+
+   /* Update function: Do your thing! */
+   obj->state &= ~OBJ_STATE_FREE;
+
+   return UG_RESULT_OK;
+}
+
+UG_RESULT UG_TexteditDelete( UG_WINDOW* wnd, UG_U8 id )
+{
+   return _UG_DeleteObject( wnd, OBJ_TYPE_TEXTEDIT, id );
+}
+
+UG_RESULT UG_TexteditShow( UG_WINDOW* wnd, UG_U8 id )
+{
+   UG_OBJECT* obj=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTEDIT, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   obj->state |= OBJ_STATE_VISIBLE;
+   obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+
+   return UG_RESULT_OK;
+}
+
+UG_RESULT UG_TexteditHide( UG_WINDOW* wnd, UG_U8 id )
+{
+   UG_OBJECT* obj=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTEDIT, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   obj->state &= ~OBJ_STATE_VISIBLE;
+   obj->state |= OBJ_STATE_UPDATE;
+
+   return UG_RESULT_OK;
+}
+
+const UG_Unicode* UG_TexteditGetText( UG_WINDOW* wnd, UG_U8 id )
+{
+   UG_OBJECT* obj=NULL;
+   UG_TEXTEDIT* edit=NULL;
+   UG_Unicode* str = NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTEDIT, id );
+   if ( obj != NULL )
+   {
+      edit = (UG_TEXTEDIT*)(obj->data);
+      str = edit->str;
+   }
+   return str;
+}
+
+UG_RESULT UG_TexteditSetText( UG_WINDOW* wnd, UG_U8 id, const UG_Unicode *str )
+{
+   UG_U16 i;
+   UG_OBJECT* obj=NULL;
+   UG_TEXTEDIT* edit=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTEDIT, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   edit = (UG_TEXTEDIT*)(obj->data);
+
+   for (i = 0; i < edit->max_size && str[i] != 0; i++)
+      edit->str[i] = str[i];
+   
+   edit->str_count = i;
+   obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+
+   return UG_RESULT_OK;
+}
+
+UG_RESULT UG_TexteditSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font )
+{
+   UG_OBJECT* obj=NULL;
+   UG_TEXTEDIT* edit=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTEDIT, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   edit = (UG_TEXTEDIT*)(obj->data);
+   edit->font = font;
+   obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+
+   return UG_RESULT_OK;
+}
+
+UG_RESULT UG_TexteditSetEchoMode(UG_WINDOW *wnd, UG_U8 id, const UG_U8 mode)
+{
+   UG_OBJECT* obj=NULL;
+   UG_TEXTEDIT* edit=NULL;
+
+   switch(mode) {
+   case TEXTEDIT_ECHO_NORMAL:
+   case TEXTEDIT_ECHO_PASSWD:
+      break;
+   default:
+      return UG_RESULT_FAIL;
+   }
+
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTEDIT, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   edit = (UG_TEXTEDIT*)(obj->data);
+   edit->echo = mode;
+
+   return UG_RESULT_OK;
+}
+
+UG_RESULT UG_TexteditSetMaxSize(UG_WINDOW *wnd, UG_U8 id, const UG_U16 max)
+{
+   UG_OBJECT* obj=NULL;
+   UG_TEXTEDIT* edit=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTEDIT, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   edit = (UG_TEXTEDIT *)(obj->data);
+   edit->max_size = max;
+   obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+
+   return UG_RESULT_OK;
+}
+
+UG_RESULT UG_TexteditAppend(UG_WINDOW *wnd, UG_U8 id, const UG_Unicode ch)
+{
+   UG_OBJECT* obj=NULL;
+   UG_TEXTEDIT* edit=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTEDIT, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   edit = (UG_TEXTEDIT*)(obj->data);
+   if (edit->str_count >= edit->max_size)
+      return UG_RESULT_FAIL;
+
+   edit->str[edit->str_count++] = ch;
+   edit->str[edit->str_count] = 0;
+   obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+
+   return UG_RESULT_OK;
+}
+
+void _UG_TexteditUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
+{
+   UG_TEXTEDIT* edit;
+   UG_AREA a;
+   UG_TEXT txt;
+   UG_Unicode echo_str[TEXT_MAX + 2];
+   UG_Unicode *ptr;
+   UG_U16 i;
+
+   /* Get object-specific data */
+   edit = (UG_TEXTEDIT*)(obj->data);
+
+   /* -------------------------------------------------- */
+   /* Object touch section                               */
+   /* -------------------------------------------------- */
+
+   if ((obj->touch_state & OBJ_TOUCH_STATE_CHANGED))
+   {
+      /* Handle 'click' event */
+      if (obj->touch_state & OBJ_TOUCH_STATE_CLICK_ON_OBJECT)
+      {
+         if (!(obj->state & OBJ_STATE_FOCUSED))
+         {
+            obj->event = OBJ_EVENT_FOCUSED_IN;
+            obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW | OBJ_STATE_FOCUSED;
+         }
+      }
+      if (obj->touch_state & OBJ_TOUCH_STATE_PRESSED_OUTSIDE_OBJECT)
+      {
+         if (obj->state & OBJ_STATE_FOCUSED)
+         {
+            obj->event = OBJ_EVENT_FOCUSED_OUT;
+            obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+            obj->state &= ~OBJ_STATE_FOCUSED;
+         }
+      }
+
+      obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+      obj->touch_state &= ~OBJ_TOUCH_STATE_CHANGED;
+   }
+
+   /* -------------------------------------------------- */
+   /* Object update section                              */
+   /* -------------------------------------------------- */
+   if ( obj->state & OBJ_STATE_UPDATE )
+   {
+      if ( obj->state & OBJ_STATE_VISIBLE )
+      {
+         /* Full redraw necessary? */
+         if ( obj->state & OBJ_STATE_REDRAW )
+         {
+            UG_WindowGetArea(wnd,&a);
+            obj->a_abs.xs = obj->a_rel.xs + a.xs;
+            obj->a_abs.ys = obj->a_rel.ys + a.ys;
+            obj->a_abs.xe = obj->a_rel.xe + a.xs;
+            obj->a_abs.ye = obj->a_rel.ye + a.ys;
+            if ( obj->a_abs.ye >= wnd->ye ) return;
+            if ( obj->a_abs.xe >= wnd->xe ) return;
+#ifdef USE_PRERENDER_EVENT
+            _UG_SendObjectPrerenderEvent(wnd, obj);
+#endif
+
+            txt.bc = edit->bc;
+            txt.fc = edit->fc;
+
+            UG_FillFrame(obj->a_abs.xs+1, obj->a_abs.ys+1, obj->a_abs.xe-1, obj->a_abs.ye-1, txt.bc);
+
+            /* Draw Border */
+            if (obj->state & OBJ_STATE_FOCUSED)
+               UG_DrawFrame(obj->a_abs.xs, obj->a_abs.ys, obj->a_abs.xe, obj->a_abs.ye, C_RED);
+            else
+               UG_DrawFrame(obj->a_abs.xs, obj->a_abs.ys, obj->a_abs.xe, obj->a_abs.ye, edit->border);
+
+            /* Draw Textbox text */
+            txt.a.xs = obj->a_abs.xs + 5;
+            txt.a.ys = obj->a_abs.ys + 1;
+            txt.a.xe = obj->a_abs.xe - 5;
+            txt.a.ye = obj->a_abs.ye - 1;
+            txt.align = edit->align;
+            txt.font = edit->font;
+            txt.h_space = edit->h_space;
+            txt.v_space = edit->v_space;
+            if (edit->echo == TEXTEDIT_ECHO_PASSWD) {
+               for (i = 0; i < edit->str_count; i++) {
+                  echo_str[i] = (UG_Unicode)'*';
+                  ptr++;
+               }
+            }
+            else {
+               for (i = 0, ptr = edit->str; i < edit->str_count; i++) {
+                  echo_str[i] = *ptr;
+                  ptr++;
+               }
+            }
+
+            if (obj->state & OBJ_STATE_FOCUSED)
+               echo_str[i++] = '|';
+
+            echo_str[i] = 0;
+            txt.str = echo_str;
             _UG_PutText( &txt );
             obj->state &= ~OBJ_STATE_REDRAW;
 #ifdef USE_POSTRENDER_EVENT

@@ -263,6 +263,7 @@ struct S_OBJECT
 #define OBJ_TYPE_TEXTBOX                              2
 #define OBJ_TYPE_IMAGE                                3
 #define OBJ_TYPE_CHECKBOX                             4
+#define OBJ_TYPE_TEXTEDIT                             5
 
 /* Standard object events */
 #define OBJ_EVENT_NONE                                0
@@ -276,11 +277,14 @@ struct S_OBJECT
 #define OBJ_EVENT_PRESSED                             4
 #define OBJ_EVENT_RELEASED                            5
 
+#define OBJ_EVENT_FOCUSED_IN                          6
+#define OBJ_EVENT_FOCUSED_OUT                         7
+
 
 /* Object states */
 #define OBJ_STATE_FREE                                (1<<0)
 #define OBJ_STATE_VALID                               (1<<1)
-#define OBJ_STATE_BUSY                                (1<<2)
+#define OBJ_STATE_FOCUSED                             (1<<2)
 #define OBJ_STATE_VISIBLE                             (1<<3)
 #define OBJ_STATE_ENABLE                              (1<<4)
 #define OBJ_STATE_UPDATE                              (1<<5)
@@ -466,9 +470,9 @@ typedef struct
 
 
 /* -------------------------------------------------------------------------------- */
-/* -- TEXTBOX OBJECT                                                             -- */
+/* -- TEXTLABEL OBJECT                                                             -- */
 /* -------------------------------------------------------------------------------- */
-/* Textbox structure */
+/* Textlabel structure */
 typedef struct
 {
    UG_Unicode *str;
@@ -479,7 +483,29 @@ typedef struct
    UG_U8 align;
    UG_S8 h_space;
    UG_S8 v_space;
-} UG_TEXTBOX;
+} UG_TEXTLABEL;
+
+/* Textedit structure */
+#define TEXT_MAX  25
+
+#define TEXTEDIT_ECHO_NORMAL 0
+#define TEXTEDIT_ECHO_PASSWD 1
+
+typedef struct
+{
+   UG_Unicode str[TEXT_MAX + 1];
+   UG_U16 max_size;
+   UG_U16 str_count;
+   const UG_FONT* font;
+   UG_U8 style;
+   UG_COLOR fc;
+   UG_COLOR bc;
+   UG_COLOR border;
+   UG_U8 align;
+   UG_S8 h_space;
+   UG_S8 v_space;
+   UG_U8 echo;
+} UG_TEXTEDIT;
 
 /* Default textbox IDs */
 #define TXB_ID_0                                      OBJ_ID_0
@@ -1023,24 +1049,35 @@ UG_S8 UG_CheckboxGetVSpace( UG_WINDOW* wnd, UG_U8 id );
 UG_U8 UG_CheckboxGetAlignment( UG_WINDOW* wnd, UG_U8 id );
 
 /* Textbox functions */
-UG_RESULT UG_TextboxCreate( UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
-UG_RESULT UG_TextboxDelete( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_TextboxShow( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_TextboxHide( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_TextboxSetForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR fc );
-UG_RESULT UG_TextboxSetBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR bc );
-UG_RESULT UG_TextboxSetText( UG_WINDOW* wnd, UG_U8 id, UG_Unicode* str );
-UG_RESULT UG_TextboxSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font );
-UG_RESULT UG_TextboxSetHSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 hs );
-UG_RESULT UG_TextboxSetVSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 vs );
-UG_RESULT UG_TextboxSetAlignment( UG_WINDOW* wnd, UG_U8 id, UG_U8 align );
-UG_COLOR UG_TextboxGetForeColor( UG_WINDOW* wnd, UG_U8 id );
-UG_COLOR UG_TextboxGetBackColor( UG_WINDOW* wnd, UG_U8 id );
-const UG_Unicode* UG_TextboxGetText( UG_WINDOW* wnd, UG_U8 id );
-UG_FONT* UG_TextboxGetFont( UG_WINDOW* wnd, UG_U8 id );
-UG_S8 UG_TextboxGetHSpace( UG_WINDOW* wnd, UG_U8 id );
-UG_S8 UG_TextboxGetVSpace( UG_WINDOW* wnd, UG_U8 id );
-UG_U8 UG_TextboxGetAlignment( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_TextlabelCreate( UG_WINDOW* wnd, UG_TEXTLABEL* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
+UG_RESULT UG_TextlabelDelete( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_TextlabelShow( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_TextlabelHide( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_TextlabelSetForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR fc );
+UG_RESULT UG_TextlabelSetBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR bc );
+UG_RESULT UG_TextlabelSetText( UG_WINDOW* wnd, UG_U8 id, UG_Unicode* str );
+UG_RESULT UG_TextlabelSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font );
+UG_RESULT UG_TextlabelSetHSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 hs );
+UG_RESULT UG_TextlabelSetVSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 vs );
+UG_RESULT UG_TextlabelSetAlignment( UG_WINDOW* wnd, UG_U8 id, UG_U8 align );
+UG_COLOR UG_TextlabelGetForeColor( UG_WINDOW* wnd, UG_U8 id );
+UG_COLOR UG_TextlabelGetBackColor( UG_WINDOW* wnd, UG_U8 id );
+const UG_Unicode* UG_TextlabelGetText( UG_WINDOW* wnd, UG_U8 id );
+UG_FONT* UG_TextlabelGetFont( UG_WINDOW* wnd, UG_U8 id );
+UG_S8 UG_TextlabelGetHSpace( UG_WINDOW* wnd, UG_U8 id );
+UG_S8 UG_TextlabelGetVSpace( UG_WINDOW* wnd, UG_U8 id );
+UG_U8 UG_TextlabelGetAlignment( UG_WINDOW* wnd, UG_U8 id );
+
+UG_RESULT UG_TexteditCreate( UG_WINDOW* wnd, UG_TEXTEDIT* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
+UG_RESULT UG_TexteditDelete( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_TexteditShow( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_TexteditHide( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_TexteditSetText( UG_WINDOW* wnd, UG_U8 id, const UG_Unicode* str );
+UG_RESULT UG_TexteditSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font );
+UG_RESULT UG_TexteditSetEchoMode(UG_WINDOW *wnd, UG_U8 id, const UG_U8 mode);
+UG_RESULT UG_TexteditSetMaxSize(UG_WINDOW *wnd, UG_U8 id, const UG_U16 max);
+UG_RESULT UG_TexteditAppend(UG_WINDOW *wnd, UG_U8 id, const UG_Unicode ch);
+const UG_Unicode* UG_TexteditGetText( UG_WINDOW* wnd, UG_U8 id );
 
 /* Image functions */
 UG_RESULT UG_ImageCreate( UG_WINDOW* wnd, UG_IMAGE* img, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
