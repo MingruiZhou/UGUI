@@ -58,6 +58,7 @@
  void _UG_CheckboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj);
  void _UG_ImageUpdate(UG_WINDOW* wnd, UG_OBJECT* obj);
  void _UG_TexteditUpdate(UG_WINDOW* wnd, UG_OBJECT* obj);
+ void _UG_RadiobuttonUpdate(UG_WINDOW* wnd, UG_OBJECT* obj);
  void _UG_PutChar(UG_Unicode chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, const UG_FONT* font);
 
  /* Pointer to the gui */
@@ -8463,6 +8464,242 @@ void _UG_TexteditUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
    }
 }
 
+/* -------------------------------------------------------------------------------- */
+/* -- RadioButton FUNCTIONS                                                          -- */
+/* -------------------------------------------------------------------------------- */
+UG_RESULT UG_RadiobuttonCreate( UG_WINDOW* wnd, UG_RADIOBUTTON* radio, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye )
+{
+   UG_OBJECT* obj;
+
+   obj = _UG_GetFreeObject( wnd );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   /* Initialize object-specific parameters */
+   radio->str = NULL;
+   if (gui != NULL) radio->font = &gui->font;
+   else radio->font = NULL;
+   radio->style = 0; /* reserved */
+   radio->fc = wnd->fc;
+   radio->bc = wnd->bc;
+   radio->align = ALIGN_CENTER_LEFT;
+   radio->h_space = 0;
+   radio->v_space = 0;
+   radio->checked = 0;
+
+   /* Initialize standard object parameters */
+   obj->update = _UG_RadiobuttonUpdate;
+   obj->touch_state = OBJ_TOUCH_STATE_INIT;
+   obj->type = OBJ_TYPE_RADIOBUTTON;
+   obj->event = OBJ_EVENT_NONE;
+   obj->a_rel.xs = xs;
+   obj->a_rel.ys = ys;
+   obj->a_rel.xe = xe;
+   obj->a_rel.ye = ye;
+   obj->a_abs.xs = -1;
+   obj->a_abs.ys = -1;
+   obj->a_abs.xe = -1;
+   obj->a_abs.ye = -1;
+   obj->id = id;
+   obj->state |= OBJ_STATE_VISIBLE | OBJ_STATE_REDRAW | OBJ_STATE_VALID | OBJ_STATE_TOUCH_ENABLE;
+   obj->data = (void*)radio;
+
+   /* Update function: Do your thing! */
+   obj->state &= ~OBJ_STATE_FREE;
+
+   return UG_RESULT_OK;
+}
+
+UG_RESULT UG_RadiobuttonDelete( UG_WINDOW* wnd, UG_U8 id )
+{
+   return _UG_DeleteObject( wnd, OBJ_TYPE_RADIOBUTTON, id );
+}
+
+UG_RESULT UG_RadiobuttonShow( UG_WINDOW* wnd, UG_U8 id )
+{
+   UG_OBJECT* obj=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_RADIOBUTTON, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   obj->state |= OBJ_STATE_VISIBLE;
+   obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+
+   return UG_RESULT_OK;
+}
+
+UG_RESULT UG_RadiobuttonHide( UG_WINDOW* wnd, UG_U8 id )
+{
+   UG_OBJECT* obj=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_RADIOBUTTON, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   obj->state &= ~OBJ_STATE_VISIBLE;
+   obj->state |= OBJ_STATE_UPDATE;
+
+   return UG_RESULT_OK;
+}
+
+const UG_Unicode* UG_RadiobuttonGetText( UG_WINDOW* wnd, UG_U8 id )
+{
+   UG_OBJECT* obj=NULL;
+   UG_RADIOBUTTON* radio=NULL;
+   UG_Unicode* str = NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_RADIOBUTTON, id );
+   if ( obj != NULL )
+   {
+      radio = (UG_RADIOBUTTON*)(obj->data);
+      str = radio->str;
+   }
+   return str;
+}
+
+UG_RESULT UG_RadiobuttonSetText( UG_WINDOW* wnd, UG_U8 id, UG_Unicode *str )
+{
+   UG_OBJECT* obj=NULL;
+   UG_RADIOBUTTON* radio=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_RADIOBUTTON, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   radio = (UG_RADIOBUTTON*)(obj->data);
+   radio->str = str;
+   obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+
+   return UG_RESULT_OK;
+}
+
+UG_RESULT UG_RadiobuttonSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font )
+{
+   UG_OBJECT* obj=NULL;
+   UG_RADIOBUTTON* radio=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_RADIOBUTTON, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   radio = (UG_RADIOBUTTON*)(obj->data);
+   radio->font = font;
+   obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+
+   return UG_RESULT_OK;
+}
+
+UG_RESULT UG_RadiobuttonSetChecked( UG_WINDOW* wnd, UG_U8 id, const UG_U8 checked )
+{
+   UG_OBJECT* obj=NULL;
+   UG_RADIOBUTTON* radio=NULL;
+
+   obj = _UG_SearchObject( wnd, OBJ_TYPE_RADIOBUTTON, id );
+   if ( obj == NULL ) return UG_RESULT_FAIL;
+
+   radio = (UG_RADIOBUTTON*)(obj->data);
+   radio->checked = checked;
+   obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+
+   return UG_RESULT_OK;
+}
+
+void _UG_RadiobuttonUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
+{
+   UG_RADIOBUTTON* radio;
+   UG_AREA a;
+   UG_TEXT txt;
+   UG_S16 centre_x, centre_y;
+   UG_S16 radius = 6;
+
+   /* Get object-specific data */
+   radio = (UG_RADIOBUTTON*)(obj->data);
+
+   /* -------------------------------------------------- */
+   /* Object touch section                               */
+   /* -------------------------------------------------- */
+
+   if ((obj->touch_state & OBJ_TOUCH_STATE_CHANGED))
+   {
+      /* Handle 'click' event */
+      if (obj->touch_state & OBJ_TOUCH_STATE_CLICK_ON_OBJECT)
+      {
+         if (!(obj->state & OBJ_STATE_FOCUSED))
+         {
+            obj->event = OBJ_EVENT_FOCUSED_IN;
+            obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW | OBJ_STATE_FOCUSED;
+         }
+      }
+      if (obj->touch_state & OBJ_TOUCH_STATE_PRESSED_OUTSIDE_OBJECT)
+      {
+         if (obj->state & OBJ_STATE_FOCUSED)
+         {
+            obj->event = OBJ_EVENT_FOCUSED_OUT;
+            obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+            obj->state &= ~OBJ_STATE_FOCUSED;
+         }
+      }
+
+      obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
+      obj->touch_state &= ~OBJ_TOUCH_STATE_CHANGED;
+   }
+
+   /* -------------------------------------------------- */
+   /* Object update section                              */
+   /* -------------------------------------------------- */
+   if ( obj->state & OBJ_STATE_UPDATE )
+   {
+      if ( obj->state & OBJ_STATE_VISIBLE )
+      {
+         /* Full redraw necessary? */
+         if ( obj->state & OBJ_STATE_REDRAW )
+         {
+            UG_WindowGetArea(wnd,&a);
+            obj->a_abs.xs = obj->a_rel.xs + a.xs;
+            obj->a_abs.ys = obj->a_rel.ys + a.ys;
+            obj->a_abs.xe = obj->a_rel.xe + a.xs;
+            obj->a_abs.ye = obj->a_rel.ye + a.ys;
+            if ( obj->a_abs.ye >= wnd->ye ) return;
+            if ( obj->a_abs.xe >= wnd->xe ) return;
+#ifdef USE_PRERENDER_EVENT
+            _UG_SendObjectPrerenderEvent(wnd, obj);
+#endif
+
+            txt.bc = radio->bc;
+            txt.fc = radio->fc;
+
+            do {
+               centre_x = obj->a_abs.xs + radius;
+               centre_y = (obj->a_abs.ys + obj->a_abs.ye)/2;
+
+	       UG_DrawCircle(centre_x, centre_y, radius, C_BLACK);
+               UG_FillCircle(centre_x, centre_y, radius - 1, C_WHITE);
+            } while (0);
+
+            /* Draw Border */
+            if (radio->checked)
+               UG_FillCircle(centre_x, centre_y, radius/2 - 1, C_BLACK);
+
+            /* Draw Textbox text */
+            txt.a.xs = centre_x + radius + 4;
+            txt.a.ys = centre_y - radio->font->char_height/2 - 1;
+            txt.a.xe = obj->a_abs.xe;
+            txt.a.ye = obj->a_abs.ye;
+            txt.align = radio->align;
+            txt.font = radio->font;
+            txt.h_space = radio->h_space;
+            txt.v_space = radio->v_space;
+            txt.str = radio->str;
+            _UG_PutText( &txt );
+            obj->state &= ~OBJ_STATE_REDRAW;
+#ifdef USE_POSTRENDER_EVENT
+            _UG_SendObjectPostrenderEvent(wnd, obj);
+#endif
+         }
+      }
+      else
+      {
+         UG_FillFrame(obj->a_abs.xs, obj->a_abs.ys, obj->a_abs.xe, obj->a_abs.ye, wnd->bc);
+      }
+      obj->state &= ~OBJ_STATE_UPDATE;
+   }
+}
 /* -------------------------------------------------------------------------------- */
 /* -- IMAGE FUNCTIONS                                                            -- */
 /* -------------------------------------------------------------------------------- */

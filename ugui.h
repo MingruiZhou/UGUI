@@ -264,6 +264,7 @@ struct S_OBJECT
 #define OBJ_TYPE_IMAGE                                3
 #define OBJ_TYPE_CHECKBOX                             4
 #define OBJ_TYPE_TEXTEDIT                             5
+#define OBJ_TYPE_RADIOBUTTON                          6
 
 /* Standard object events */
 #define OBJ_EVENT_NONE                                0
@@ -528,6 +529,23 @@ typedef struct
 #define TXB_ID_17                                     OBJ_ID_17
 #define TXB_ID_18                                     OBJ_ID_18
 #define TXB_ID_19                                     OBJ_ID_19
+
+
+/* -------------------------------------------------------------------------------- */
+/* -- RadioButton OBJECT                                                               -- */
+/* -------------------------------------------------------------------------------- */
+typedef struct
+{
+   UG_Unicode *str;
+   const UG_FONT* font;
+   UG_U8 style;
+   UG_COLOR fc;
+   UG_COLOR bc;
+   UG_U8 align;
+   UG_S8 h_space;
+   UG_S8 v_space;
+   UG_U8 checked;
+} UG_RADIOBUTTON;
 
 /* -------------------------------------------------------------------------------- */
 /* -- IMAGE OBJECT                                                               -- */
@@ -1078,6 +1096,15 @@ UG_RESULT UG_TexteditSetEchoMode(UG_WINDOW *wnd, UG_U8 id, const UG_U8 mode);
 UG_RESULT UG_TexteditSetMaxSize(UG_WINDOW *wnd, UG_U8 id, const UG_U16 max);
 UG_RESULT UG_TexteditAppend(UG_WINDOW *wnd, UG_U8 id, const UG_Unicode ch);
 const UG_Unicode* UG_TexteditGetText( UG_WINDOW* wnd, UG_U8 id );
+
+/* RadioButton Functions */
+UG_RESULT UG_RadiobuttonCreate( UG_WINDOW* wnd, UG_RADIOBUTTON* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
+UG_RESULT UG_RadiobuttonDelete( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_RadiobuttonShow( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_RadiobuttonHide( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_RadiobuttonSetText( UG_WINDOW* wnd, UG_U8 id, UG_Unicode* str );
+UG_RESULT UG_RadiobuttonSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font );
+UG_RESULT UG_RadiobuttonSetChecked( UG_WINDOW* wnd, UG_U8 id, const UG_U8 checked );
 
 /* Image functions */
 UG_RESULT UG_ImageCreate( UG_WINDOW* wnd, UG_IMAGE* img, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
