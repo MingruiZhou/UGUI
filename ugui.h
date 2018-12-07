@@ -603,9 +603,13 @@ typedef struct
 /* -------------------------------------------------------------------------------- */
 /* -- µGUI CORE STRUCTURE                                                        -- */
 /* -------------------------------------------------------------------------------- */
+typedef void (*PixelSetFunc)(void*,UG_S16,UG_S16,UG_COLOR);
+typedef UG_COLOR (*PixelGetFunc)(void*,UG_S16,UG_S16);
+
 typedef struct
 {
-   void (*pset)(UG_S16,UG_S16,UG_COLOR);
+   PixelSetFunc pset;
+   PixelGetFunc pget;
    UG_S16 x_dim;
    UG_S16 y_dim;
    UG_TOUCH touch;
@@ -631,6 +635,7 @@ typedef struct
    UG_COLOR desktop_color;
    UG_U8 state;
    UG_DRIVER driver[NUMBER_OF_DRIVERS];
+   void *fb;
 } UG_GUI;
 
 #define UG_SATUS_WAIT_FOR_UPDATE                      (1<<0)
@@ -927,7 +932,7 @@ typedef struct
 /* -- PROTOTYPES                                                                 -- */
 /* -------------------------------------------------------------------------------- */
 /* Classic functions */
-UG_S16 UG_Init( UG_GUI* g, void (*p)(UG_S16,UG_S16,UG_COLOR), UG_S16 x, UG_S16 y );
+UG_S16 UG_Init( UG_GUI* g, PixelSetFunc pset, PixelGetFunc pget, void *fb, UG_S16 x, UG_S16 y );
 UG_S16 UG_SelectGUI( UG_GUI* g );
 void UG_FontSelect( const UG_FONT* font );
 void UG_FillScreen( UG_COLOR c );

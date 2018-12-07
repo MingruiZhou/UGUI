@@ -4556,11 +4556,12 @@ __UG_FONT_DATA unsigned char font_32x53[256][212]={
 
 
 
-UG_S16 UG_Init( UG_GUI* g, void (*p)(UG_S16,UG_S16,UG_COLOR), UG_S16 x, UG_S16 y )
+UG_S16 UG_Init( UG_GUI* g, PixelSetFunc set_func, PixelGetFunc get_func,void *fb, UG_S16 x, UG_S16 y )
 {
    UG_U8 i;
 
-   g->pset = (void(*)(UG_S16,UG_S16,UG_COLOR))p;
+   g->pset = set_func;
+   g->pget = get_func;
    g->x_dim = x;
    g->y_dim = y;
    g->console.x_start = 4;
@@ -4588,6 +4589,7 @@ UG_S16 UG_Init( UG_GUI* g, void (*p)(UG_S16,UG_S16,UG_COLOR), UG_S16 x, UG_S16 y
    g->next_window = NULL;
    g->active_window = NULL;
    g->last_window = NULL;
+   g->fb = fb;
 
    /* Clear drivers */
    for(i=0;i<NUMBER_OF_DRIVERS;i++)
@@ -4609,6 +4611,16 @@ UG_S16 UG_SelectGUI( UG_GUI* g )
 void UG_FontSelect( const UG_FONT* font )
 {
    gui->font = *font;
+}
+
+void UG_DrawPixel( UG_S16 x0, UG_S16 y0, UG_COLOR c )
+{
+   gui->pset(gui->fb,x0,y0,c);
+}
+
+UG_COLOR UG_GetPixelColor( UG_S16 x0, UG_S16 y0 )
+{
+   return gui->pget(gui->fb,x0,y0);
 }
 
 void UG_FillScreen( UG_COLOR c )
@@ -4643,7 +4655,7 @@ void UG_FillFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c )
    {
       for( n=x1; n<=x2; n++ )
       {
-         gui->pset(n,m,c);
+         UG_DrawPixel(n,m,c);
       }
    }
 }
@@ -4719,7 +4731,7 @@ void UG_DrawMesh( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c )
    {
       for( n=x1; n<=x2; n+=2 )
       {
-         gui->pset(n,m,c);
+         UG_DrawPixel(n,m,c);
       }
    }
 }
@@ -4761,10 +4773,6 @@ void UG_DrawRoundFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_S16 r, UG
    UG_DrawArc(x2-r, y2-r, r, 0xC0, c);
 }
 
-void UG_DrawPixel( UG_S16 x0, UG_S16 y0, UG_COLOR c )
-{
-   gui->pset(x0,y0,c);
-}
 
 void UG_DrawCircle( UG_S16 x0, UG_S16 y0, UG_S16 r, UG_COLOR c )
 {
@@ -4782,14 +4790,14 @@ void UG_DrawCircle( UG_S16 x0, UG_S16 y0, UG_S16 r, UG_COLOR c )
 
    while ( x >= y )
    {
-      gui->pset(x0 - x, y0 + y, c);
-      gui->pset(x0 - x, y0 - y, c);
-      gui->pset(x0 + x, y0 + y, c);
-      gui->pset(x0 + x, y0 - y, c);
-      gui->pset(x0 - y, y0 + x, c);
-      gui->pset(x0 - y, y0 - x, c);
-      gui->pset(x0 + y, y0 + x, c);
-      gui->pset(x0 + y, y0 - x, c);
+      UG_DrawPixel(x0 - x, y0 + y, c);
+      UG_DrawPixel(x0 - x, y0 - y, c);
+      UG_DrawPixel(x0 + x, y0 + y, c);
+      UG_DrawPixel(x0 + x, y0 - y, c);
+      UG_DrawPixel(x0 - y, y0 + x, c);
+      UG_DrawPixel(x0 - y, y0 - x, c);
+      UG_DrawPixel(x0 + y, y0 + x, c);
+      UG_DrawPixel(x0 + y, y0 - x, c);
 
       y++;
       e += yd;
@@ -4858,20 +4866,20 @@ void UG_DrawArc( UG_S16 x0, UG_S16 y0, UG_S16 r, UG_U8 s, UG_COLOR c )
    while ( x >= y )
    {
       // Q1
-      if ( s & 0x01 ) gui->pset(x0 + x, y0 - y, c);
-      if ( s & 0x02 ) gui->pset(x0 + y, y0 - x, c);
+      if ( s & 0x01 ) UG_DrawPixel(x0 + x, y0 - y, c);
+      if ( s & 0x02 ) UG_DrawPixel(x0 + y, y0 - x, c);
 
       // Q2
-      if ( s & 0x04 ) gui->pset(x0 - y, y0 - x, c);
-      if ( s & 0x08 ) gui->pset(x0 - x, y0 - y, c);
+      if ( s & 0x04 ) UG_DrawPixel(x0 - y, y0 - x, c);
+      if ( s & 0x08 ) UG_DrawPixel(x0 - x, y0 - y, c);
 
       // Q3
-      if ( s & 0x10 ) gui->pset(x0 - x, y0 + y, c);
-      if ( s & 0x20 ) gui->pset(x0 - y, y0 + x, c);
+      if ( s & 0x10 ) UG_DrawPixel(x0 - x, y0 + y, c);
+      if ( s & 0x20 ) UG_DrawPixel(x0 - y, y0 + x, c);
 
       // Q4
-      if ( s & 0x40 ) gui->pset(x0 + y, y0 + x, c);
-      if ( s & 0x80 ) gui->pset(x0 + x, y0 + y, c);
+      if ( s & 0x40 ) UG_DrawPixel(x0 + y, y0 + x, c);
+      if ( s & 0x80 ) UG_DrawPixel(x0 + x, y0 + y, c);
 
       y++;
       e += yd;
@@ -4906,7 +4914,7 @@ void UG_DrawLine( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c )
    drawx = x1;
    drawy = y1;
 
-   gui->pset(drawx, drawy,c);
+   UG_DrawPixel(drawx, drawy,c);
 
    if( dxabs >= dyabs )
    {
@@ -4919,7 +4927,7 @@ void UG_DrawLine( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c )
             drawy += sgndy;
          }
          drawx += sgndx;
-         gui->pset(drawx, drawy,c);
+         UG_DrawPixel(drawx, drawy,c);
       }
    }
    else
@@ -4933,7 +4941,7 @@ void UG_DrawLine( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c )
             drawx += sgndx;
          }
          drawy += sgndy;
-         gui->pset(drawx, drawy,c);
+         UG_DrawPixel(drawx, drawy,c);
       }
    }  
 }
@@ -5346,14 +5354,14 @@ void _UG_PutChar( UG_Unicode chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, 
                   if (push_pixel)
                      push_pixel(fc);
                   else
-                     gui->pset(xo,yo,fc);
+                     UG_DrawPixel(xo,yo,fc);
                }
                else
                {
                   if (push_pixel)
                      push_pixel(bc);
                   else
-                     gui->pset(xo,yo,bc);
+                     UG_DrawPixel(xo,yo,bc);
                }
                b >>= 1;
                xo++;
@@ -5378,7 +5386,7 @@ void _UG_PutChar( UG_Unicode chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, 
             if (push_pixel)
                push_pixel(color);
             else
-               gui->pset(xo,yo,color);
+               UG_DrawPixel(xo,yo,color);
             xo++;
          }
          index += font->char_width - actual_char_width;
@@ -5833,6 +5841,27 @@ void UG_WaitForUpdate( void )
    #endif    
 }
 
+static UG_COLOR overlap_color(UG_COLOR fg, UG_COLOR bg, double alpha)
+{
+   UG_U8 fg_r, fg_g, fg_b;
+   UG_U8 bg_r, bg_g, bg_b;
+
+   fg_r = fg >> 24;
+   fg_g = (fg >> 16) & 0xff;
+   fg_b = (fg >> 8) & 0xff;
+
+   bg_r = bg >> 16;
+   bg_g = (bg >> 8) & 0xff;
+   bg_b = bg & 0xff;
+
+   fg_r = fg_r * alpha + bg_r * (1 - alpha);
+   fg_g = fg_g * alpha + bg_g * (1 - alpha);
+   fg_b = fg_b * alpha + bg_b * (1 - alpha);
+
+   return ((UG_COLOR)fg_r << 16) | ((UG_COLOR)fg_g << 8) | (UG_COLOR)fg_b;
+}
+
+
 void UG_DrawBMP( UG_S16 xp, UG_S16 yp, UG_BMP* bmp )
 {
    UG_S16 x,y,xs;
@@ -5866,14 +5895,18 @@ void UG_DrawBMP( UG_S16 xp, UG_S16 yp, UG_BMP* bmp )
          int i = 0;
 
          c = 0;
-         tmp = &c;
+         tmp = (UG_U8*)&c;
          for (i = 0; i < bytes_pp; i++)
             tmp[i] = bytes[i];
 
          switch(bmp->bpp) {
          case BMP_BPP_32: //RGBA
             do {
-               UG_DrawPixel(xp++ , yp , c >> 8);
+               double alpha;
+
+               alpha = (c & 0xff)/255.0;
+               c = overlap_color(c, gui->pget(gui->fb, xp, yp), alpha);
+               UG_DrawPixel(xp++ , yp , c);
             } while (0);
             break;
          case BMP_BPP_16: //RGB565 or RGB555
