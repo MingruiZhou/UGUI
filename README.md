@@ -11,7 +11,7 @@ consists of three files: **ugui.c**, **ugui.h** and **ugui_config.h**.
 * µGUI supports any display resolution
 * µGUI supports multiple different displays
 * µGUI supports any touch screen technology (e.g. AR, PCAP)
-* µGUI supports windows and objects (e.g. button, textbox)
+* µGUI supports windows and objects (e.g. button, texlabel, textedit, checkbox and radiobutton)
 * µGUI supports platform-specific hardware acceleration
 * 16 different fonts available
 * cyrillic fonts supported
@@ -23,6 +23,7 @@ consists of three files: **ugui.c**, **ugui.h** and **ugui_config.h**.
 
 ## µGUI Requirements
 µGUI is platform-independent, so there is no need to use a certain embedded system. In order to
-use µGUI, only two requirements are necessary:
-* a C-function which is able to control pixels of the target display.
+use µGUI, only three requirements are necessary:
+* a C-function which is able to set pixel color of the target display.
+* a C-function which is abel to get pixel color of the target display.
 * integer types for the target platform have to be adjusted in ugui_config.h.
