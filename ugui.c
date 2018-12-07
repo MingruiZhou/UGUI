@@ -7149,23 +7149,21 @@ void _UG_ButtonUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
       if ( obj->touch_state & OBJ_TOUCH_STATE_CLICK_ON_OBJECT )
       {
          obj->event = BTN_EVENT_CLICKED;
-         obj->state |= OBJ_STATE_UPDATE;
       }
       /* Is the button pressed down? */
       if ( obj->touch_state & OBJ_TOUCH_STATE_PRESSED_ON_OBJECT )
       {
          btn->state |= BTN_STATE_PRESSED;
-         obj->state |= OBJ_STATE_UPDATE;
-         obj->event = OBJ_EVENT_PRESSED;
+         //obj->event = OBJ_EVENT_PRESSED;
       }
       /* Can we release the button? */
       else if ( btn->state & BTN_STATE_PRESSED )
       {
          btn->state &= ~BTN_STATE_PRESSED;
-         obj->state |= OBJ_STATE_UPDATE;
-         obj->event = OBJ_EVENT_RELEASED;
+         //obj->event = OBJ_EVENT_RELEASED;
       }
       obj->touch_state &= ~OBJ_TOUCH_STATE_CHANGED;
+      obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
    }
 
    /* -------------------------------------------------- */
@@ -8512,6 +8510,7 @@ UG_RESULT UG_RadiobuttonCreate( UG_WINDOW* wnd, UG_RADIOBUTTON* radio, UG_U8 id,
    if (gui != NULL) radio->font = &gui->font;
    else radio->font = NULL;
    radio->style = 0; /* reserved */
+   radio->state = BTN_STATE_RELEASED;
    radio->fc = wnd->fc;
    radio->bc = wnd->bc;
    radio->align = ALIGN_CENTER_LEFT;
@@ -8650,25 +8649,26 @@ void _UG_RadiobuttonUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
 
    if ((obj->touch_state & OBJ_TOUCH_STATE_CHANGED))
    {
-      /* Handle 'click' event */
-      if (obj->touch_state & OBJ_TOUCH_STATE_CLICK_ON_OBJECT)
+      if ( obj->touch_state & OBJ_TOUCH_STATE_CLICK_ON_OBJECT )
       {
-         if (!(obj->state & OBJ_STATE_FOCUSED))
-         {
-            obj->event = OBJ_EVENT_FOCUSED_IN;
-            obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW | OBJ_STATE_FOCUSED;
-         }
+         obj->event = BTN_EVENT_CLICKED;
+         obj->state |= OBJ_STATE_UPDATE;
+         radio->checked = radio->checked?0:1;
       }
-      if (obj->touch_state & OBJ_TOUCH_STATE_PRESSED_OUTSIDE_OBJECT)
+      /* Is the button pressed down? */
+      if ( obj->touch_state & OBJ_TOUCH_STATE_PRESSED_ON_OBJECT )
       {
-         if (obj->state & OBJ_STATE_FOCUSED)
-         {
-            obj->event = OBJ_EVENT_FOCUSED_OUT;
-            obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
-            obj->state &= ~OBJ_STATE_FOCUSED;
-         }
+         radio->state |= BTN_STATE_PRESSED;
+         obj->state |= OBJ_STATE_UPDATE;
+         //obj->event = OBJ_EVENT_PRESSED;
       }
-
+      /* Can we release the button? */
+      else if ( radio->state & BTN_STATE_PRESSED )
+      {
+         radio->state &= ~BTN_STATE_PRESSED;
+         obj->state |= OBJ_STATE_UPDATE;
+         //obj->event = OBJ_EVENT_RELEASED;
+      }
       obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
       obj->touch_state &= ~OBJ_TOUCH_STATE_CHANGED;
    }

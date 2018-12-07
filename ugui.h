@@ -538,6 +538,7 @@ typedef struct
 {
    UG_Unicode *str;
    const UG_FONT* font;
+   UG_U8 state;
    UG_U8 style;
    UG_COLOR fc;
    UG_COLOR bc;
