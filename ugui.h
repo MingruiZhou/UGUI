@@ -604,19 +604,31 @@ typedef struct
 /* -------------------------------------------------------------------------------- */
 /* -- µGUI CORE STRUCTURE                                                        -- */
 /* -------------------------------------------------------------------------------- */
-typedef void (*PixelSetFunc)(void*,UG_S16,UG_S16,UG_COLOR);
-typedef UG_COLOR (*PixelGetFunc)(void*,UG_S16,UG_S16);
+
+struct _UG_DEVICE;
+typedef struct _UG_DEVICE UG_DEVICE;
+
+typedef void (*PixelSetFunc)(UG_DEVICE*,UG_S16,UG_S16,UG_COLOR);
+typedef UG_COLOR (*PixelGetFunc)(UG_DEVICE*,UG_S16,UG_S16);
+
+struct _UG_DEVICE{
+   void *fb;
+   UG_U8 bpp;
+   UG_U8 color_model;
+   UG_S16 x_dim;
+   UG_S16 y_dim;
+   PixelSetFunc pset;
+   PixelGetFunc pget;
+};
 
 typedef struct
 {
-   PixelSetFunc pset;
-   PixelGetFunc pget;
-   UG_S16 x_dim;
-   UG_S16 y_dim;
    UG_TOUCH touch;
    UG_WINDOW* next_window;
    UG_WINDOW* active_window;
    UG_WINDOW* last_window;
+   UG_S16 x_dim;
+   UG_S16 y_dim;
    struct
    {
       UG_S16 x_pos;
@@ -636,8 +648,9 @@ typedef struct
    UG_COLOR desktop_color;
    UG_U8 state;
    UG_DRIVER driver[NUMBER_OF_DRIVERS];
-   void *fb;
+   UG_DEVICE *device;
 } UG_GUI;
+
 
 #define UG_SATUS_WAIT_FOR_UPDATE                      (1<<0)
 
@@ -933,7 +946,7 @@ typedef struct
 /* -- PROTOTYPES                                                                 -- */
 /* -------------------------------------------------------------------------------- */
 /* Classic functions */
-UG_S16 UG_Init( UG_GUI* g, PixelSetFunc pset, PixelGetFunc pget, void *fb, UG_S16 x, UG_S16 y );
+UG_S16 UG_Init( UG_GUI* g, UG_DEVICE *device);
 UG_S16 UG_SelectGUI( UG_GUI* g );
 void UG_FontSelect( const UG_FONT* font );
 void UG_FillScreen( UG_COLOR c );

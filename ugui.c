@@ -4556,18 +4556,15 @@ __UG_FONT_DATA unsigned char font_32x53[256][212]={
 
 
 
-UG_S16 UG_Init( UG_GUI* g, PixelSetFunc set_func, PixelGetFunc get_func,void *fb, UG_S16 x, UG_S16 y )
+UG_S16 UG_Init( UG_GUI* g, UG_DEVICE *device )
 {
    UG_U8 i;
 
-   g->pset = set_func;
-   g->pget = get_func;
-   g->x_dim = x;
-   g->y_dim = y;
+   g->device = device;
    g->console.x_start = 4;
    g->console.y_start = 4;
-   g->console.x_end = g->x_dim - g->console.x_start-1;
-   g->console.y_end = g->y_dim - g->console.x_start-1;
+   g->console.x_end = g->device->x_dim - g->console.x_start-1;
+   g->console.y_end = g->device->y_dim - g->console.x_start-1;
    g->console.x_pos = g->console.x_end;
    g->console.y_pos = g->console.y_end;
    g->char_h_space = 1;
@@ -4589,7 +4586,6 @@ UG_S16 UG_Init( UG_GUI* g, PixelSetFunc set_func, PixelGetFunc get_func,void *fb
    g->next_window = NULL;
    g->active_window = NULL;
    g->last_window = NULL;
-   g->fb = fb;
 
    /* Clear drivers */
    for(i=0;i<NUMBER_OF_DRIVERS;i++)
@@ -4613,22 +4609,22 @@ void UG_FontSelect( const UG_FONT* font )
    gui->font = *font;
 }
 
-void UG_DrawPixel( UG_S16 x0, UG_S16 y0, UG_COLOR c )
+void UG_DrawPixel( UG_S16 x0, UG_S16 y0, UG_COLOR c)
 {
-   gui->pset(gui->fb,x0,y0,c);
+   gui->device->pset(gui->device,x0,y0,c);
 }
 
 UG_COLOR UG_GetPixelColor( UG_S16 x0, UG_S16 y0 )
 {
-   return gui->pget(gui->fb,x0,y0);
+   return gui->device->pget(gui->device,x0,y0);
 }
 
 void UG_FillScreen( UG_COLOR c )
 {
-   UG_FillFrame(0,0,gui->x_dim-1,gui->y_dim-1,c);
+   UG_FillFrame(0,0,gui->device->x_dim-1,gui->device->y_dim-1,c);
 }
 
-void UG_FillFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c )
+void UG_FillFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c)
 {
    UG_S16 n,m;
 
@@ -4961,7 +4957,7 @@ void UG_PutString( UG_S16 x, UG_S16 y, UG_Unicode* str )
       chr = *str++;
       if ( chr == '\n' )
       {
-         xp = gui->x_dim;
+         xp = gui->device->x_dim;
          continue;
       }
       if (chr < gui->font.start_char || chr > gui->font.end_char) continue;
@@ -4979,7 +4975,7 @@ void UG_PutString( UG_S16 x, UG_S16 y, UG_Unicode* str )
 
       cw = gui->font.widths ? gui->font.widths[i] : gui->font.char_width;
 
-      if ( xp + cw > gui->x_dim - 1 )
+      if ( xp + cw > gui->device->x_dim - 1 )
       {
          xp = x;
          yp += gui->font.char_height+gui->char_v_space;
@@ -5007,7 +5003,7 @@ void UG_ConsolePutString( UG_Unicode* str )
       chr = *str;
       if ( chr == '\n' )
       {
-         gui->console.x_pos = gui->x_dim;
+         gui->console.x_pos = gui->device->x_dim;
          str++;
          continue;
       }
@@ -5073,12 +5069,12 @@ void UG_SetBackcolor( UG_COLOR c )
 
 UG_S16 UG_GetXDim( void )
 {
-   return gui->x_dim;
+   return gui->device->x_dim;
 }
 
 UG_S16 UG_GetYDim( void )
 {
-   return gui->y_dim;
+   return gui->device->y_dim;
 }
 
 void UG_FontSetHSpace( UG_U16 s )
@@ -5690,8 +5686,8 @@ void _UG_HandleEvents( UG_WINDOW* wnd )
             msg.id = obj->type;
             msg.sub_id = obj->id;
             msg.event = obj->event;
-
-            wnd->cb( &msg );
+            if (wnd->cb)
+               wnd->cb( &msg );
 
             obj->event = OBJ_EVENT_NONE;
          }
@@ -5728,6 +5724,7 @@ void _UG_SendObjectPrerenderEvent(UG_WINDOW *wnd,UG_OBJECT *obj)
 	msg.sub_id = obj->id;
 	msg.src = obj;
 
+        if (wnd->cb)
 	wnd->cb(&msg);
 }
 #endif
@@ -5741,7 +5738,7 @@ void _UG_SendObjectPostrenderEvent(UG_WINDOW *wnd,UG_OBJECT *obj)
 	msg.id = obj->type;
 	msg.sub_id = obj->id;
 	msg.src = obj;
-
+        if (wnd->cb)
 	wnd->cb(&msg);
 }
 #endif
@@ -5905,7 +5902,7 @@ void UG_DrawBMP( UG_S16 xp, UG_S16 yp, UG_BMP* bmp )
                double alpha;
 
                alpha = (c & 0xff)/255.0;
-               c = overlap_color(c, gui->pget(gui->fb, xp, yp), alpha);
+               c = overlap_color(c, gui->device->pget(gui->device, xp, yp), alpha);
                UG_DrawPixel(xp++ , yp , c);
             } while (0);
             break;
